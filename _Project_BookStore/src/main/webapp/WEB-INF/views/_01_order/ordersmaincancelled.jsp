@@ -698,7 +698,7 @@ div .row {
 																</c:when>
 																<c:otherwise>
 																	<span><a
-																		href='<c:url value='shippingdata?orderNo=${anOrderBean.orderNo}'/>'>
+																		href='<c:url value='shippingdata/${anOrderBean.orderNo}'/>'>
 																		${anOrderBean.shippingNo}
 																		</a></span>
 																</c:otherwise>

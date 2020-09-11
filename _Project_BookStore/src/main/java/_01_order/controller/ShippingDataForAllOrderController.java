@@ -13,6 +13,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.SessionAttributes;
@@ -38,13 +39,14 @@ public class ShippingDataForAllOrderController {
 	@Autowired
 	ServletContext context;
 	
-	@GetMapping("/shippingdata")
-	public String showShippingData(Model model, HttpServletRequest req) {
+	@GetMapping("/shippingdata/{orderNo}")
+	public String showShippingData(Model model, 
+			@PathVariable String orderNo) {
 		Members m = (Members) model.getAttribute("LoginOK");
 		if (m == null) {
 			return "redirect: " + context.getContextPath() + "/Login";
 		}		
-		String orderNo = req.getParameter("orderNo");
+//		String orderNo = req.getParameter("orderNo");
 		ShippingDataBean sdb = service.getShippingData(orderNo);
 		
 		model.addAttribute("ShippingDataBean", sdb);
@@ -76,13 +78,13 @@ public class ShippingDataForAllOrderController {
 
 	//所有的訂單之運送狀態變更(已取消的訂單無法變更)
 	@SuppressWarnings("unused")
-	@PostMapping(value = "/shippingdatachange/{ShippingDataBean.orderBean.orderNo}")
+	@PostMapping(value = "/shippingdatachange/{orderNo}")
 	public ResponseEntity<Map<String, String>> changeShippingDataForAll(Model model,
 			String orderNo,
 			String shippingNo,
 			String address,
 			String shippingStatus) {
-		System.out.println("AA"+"-------------------------------------------------");
+
 		ShippingDataBean sdbSelect = service.getShippingData(orderNo);
 		Map<String, String> sdbmap = new HashMap<String, String>();
 		ResponseEntity<Map<String, String>> re = null;
@@ -103,7 +105,7 @@ public class ShippingDataForAllOrderController {
 			re = new ResponseEntity<Map<String,String>>(sdbmap, HttpStatus.NOT_FOUND);
 			return re; 	 //表示已取消，前端顯示表格，且跳出提醒(訂單已取消，無法變更)，按鈕消失
 		}
-		System.out.println("-----------------------bbb--------------------------");
+
 		if (shippingStatus == "") {
 			shippingStatus = null;
 			if (shippingStatus != sdbSelect.getShippingStatus()) {
@@ -112,7 +114,7 @@ public class ShippingDataForAllOrderController {
 				return re;     //表示已出貨，前端顯示表格，且跳出提醒(訂單已出貨，無法變更)，按鈕消失
 			}
 		}
-		System.out.println("-----------------------ccc--------------------------");
+
 		if (sort >= 3) {
 			sdbmap.put("errormsg", "已修改2次以上，無法變更");
 			re = new ResponseEntity<Map<String,String>>(sdbmap, HttpStatus.NOT_FOUND);
@@ -121,7 +123,7 @@ public class ShippingDataForAllOrderController {
 		
 		Date today = new Date();
 		
-		System.out.println("-----------------------ddd--------------------------");
+
 		//填入新的物流資料、更新時間和修改次數至資料庫
 		if (sort < 3) {
 			ShippingDataBean modifysdb = 
@@ -138,7 +140,7 @@ public class ShippingDataForAllOrderController {
 			//回傳更新的訂單運送資料(表格)，有表單按鈕
 		}
 
-		System.out.println("-----------------------eee--------------------------");
+
 		re = new ResponseEntity<Map<String,String>>(sdbmap, HttpStatus.CREATED);
 		return re;
 	}
